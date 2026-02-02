@@ -158,6 +158,56 @@ public class VeDAO extends BaseDAO {
         return isGheTrongTx(c, suatChieuId, gheId);
     }
 }
+public List<HoaDonVeDTO> getAllHoaDonVe() throws Exception {
+    String sql = "SELECT hoa_don_ve_id, nhan_vien_id, ngay_lap, tong_tien FROM HoaDonVe ORDER BY ngay_lap DESC";
+    List<HoaDonVeDTO> list = new ArrayList<>();
+    try (Connection c = getConnection();
+         PreparedStatement ps = c.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            HoaDonVeDTO hd = new HoaDonVeDTO();
+            hd.setHoaDonVeId(rs.getInt("hoa_don_ve_id"));
+            hd.setNhanVienId(rs.getInt("nhan_vien_id"));
+            hd.setNgayLap(rs.getTimestamp("ngay_lap"));
+            hd.setTongTien(rs.getDouble("tong_tien"));
+            list.add(hd);
+        }
+    }
+    return list;
+}
+
+public void deleteHoaDonVe(int hoaDonVeId) throws Exception {
+    // thứ tự xóa: ChiTietHoaDonVe -> Ve -> HoaDonVe
+    String delCt = "DELETE FROM ChiTietHoaDonVe WHERE hoa_don_ve_id=?";
+    // xóa vé theo hóa đơn: cần join qua ChiTiet (nếu bạn muốn sạch)
+    String delVe =
+        "DELETE FROM Ve WHERE ve_id IN (SELECT ve_id FROM ChiTietHoaDonVe WHERE hoa_don_ve_id=?)";
+    String delHd = "DELETE FROM HoaDonVe WHERE hoa_don_ve_id=?";
+
+    try (Connection c = getConnection()) {
+        c.setAutoCommit(false);
+        try (PreparedStatement ps1 = c.prepareStatement(delCt);
+             PreparedStatement ps2 = c.prepareStatement(delVe);
+             PreparedStatement ps3 = c.prepareStatement(delHd)) {
+
+            ps2.setInt(1, hoaDonVeId);
+            ps2.executeUpdate();
+
+            ps1.setInt(1, hoaDonVeId);
+            ps1.executeUpdate();
+
+            ps3.setInt(1, hoaDonVeId);
+            ps3.executeUpdate();
+
+            c.commit();
+        } catch (Exception ex) {
+            c.rollback();
+            throw ex;
+        } finally {
+            c.setAutoCommit(true);
+        }
+    }
+}
 
 
 

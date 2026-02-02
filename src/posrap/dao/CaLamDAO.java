@@ -77,4 +77,20 @@ public class CaLamDAO extends BaseDAO {
             }
         }
     }
+    public CaLamDTO getById(int caLamId) throws Exception {
+    String sql = "SELECT ca_lam_id, gio_bat_dau, gio_ket_thuc FROM CaLam WHERE ca_lam_id=?";
+    try (Connection c = getConnection();
+         PreparedStatement ps = c.prepareStatement(sql)) {
+        ps.setInt(1, caLamId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) return null;
+            CaLamDTO ca = new CaLamDTO();
+            ca.setCaLamId(rs.getInt("ca_lam_id"));
+            ca.setGioBatDau(rs.getTime("gio_bat_dau"));
+            ca.setGioKetThuc(rs.getTime("gio_ket_thuc"));
+            return ca;
+        }
+    }
+}
+
 }

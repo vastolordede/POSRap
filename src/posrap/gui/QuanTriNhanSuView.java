@@ -34,17 +34,20 @@ public class QuanTriNhanSuView extends JPanel {
        TAB 1: NHÂN VIÊN
      ====================================================== */
     private JPanel buildNhanVienTab() {
-        DefaultTableModel model = new DefaultTableModel(new Object[]{
-                "ID", "Ma", "Ho ten", "SDT", "Email", "Trang thai"
-        }, 0);
-        JTable table = new JTable(model);
-        reloadNhanVien(model);
+    DefaultTableModel model = new DefaultTableModel(new Object[]{
+            "ID", "Ma", "Ho ten", "SDT", "Email", "Trang thai"
+    }, 0);
+    JTable table = new JTable(model);
+    reloadNhanVien(model);
 
-        return wrapCrudTable("Nhan vien", table, model,
-                () -> reloadNhanVien(model),
-                null, null
-        );
-    }
+    return wrapCrudTable("Nhan vien", table, model,
+            () -> reloadNhanVien(model),
+            () -> UiUtil.showInfo(this, "NhanVienDAO chua co insert()."),
+            () -> UiUtil.showInfo(this, "NhanVienDAO chua co update()."),
+            () -> UiUtil.showInfo(this, "NhanVienDAO chua co delete().")
+    );
+}
+
 
     private void reloadNhanVien(DefaultTableModel model) {
         model.setRowCount(0);

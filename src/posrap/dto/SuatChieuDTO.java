@@ -1,13 +1,14 @@
 package posrap.dto;
 
 import java.util.Date;
+import java.sql.Timestamp;
 
 public class SuatChieuDTO {
     private int suatChieuId;
     private int phimId;
     private int phongChieuId;
-    private Date batDau;
-    private Date ketThuc;
+    private Timestamp batDau;
+    private Timestamp ketThuc;
     private double gia;
 
     public SuatChieuDTO() {}
@@ -36,21 +37,12 @@ public class SuatChieuDTO {
         this.phongChieuId = phongChieuId;
     }
 
-    public Date getBatDau() {
-        return batDau;
-    }
+    public Timestamp getBatDau() { return batDau; }
+    public void setBatDau(Timestamp batDau) { this.batDau = batDau; }
 
-    public void setBatDau(Date batDau) {
-        this.batDau = batDau;
-    }
+    public Timestamp getKetThuc() { return ketThuc; }
+    public void setKetThuc(Timestamp ketThuc) { this.ketThuc = ketThuc; }
 
-    public Date getKetThuc() {
-        return ketThuc;
-    }
-
-    public void setKetThuc(Date ketThuc) {
-        this.ketThuc = ketThuc;
-    }
 
     public double getGia() {
         return gia;

@@ -371,4 +371,79 @@ public HoaDonBapNuocDTO taoHoaDon(List<ChiTietHoaDonBapNuocDTO> ct) throws Excep
                 if (affected <= 0) throw new Exception("Tru ton kho that bai (bien the: " + bienTheId + ")");
             }
         }
+        // Thêm vào BapNuocDAO
+
+public MonBapNuocDTO getMonById(int monId) throws Exception {
+    String sql = "SELECT mon_id, ten_mon, ton_kho FROM MonBapNuoc WHERE mon_id=?";
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, monId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) return null;
+            MonBapNuocDTO m = new MonBapNuocDTO();
+            m.setMonId(rs.getInt("mon_id"));
+            m.setTenMon(rs.getString("ten_mon"));
+            m.setTonKho(rs.getInt("ton_kho"));
+            return m;
+        }
+    }
+}
+
+public SizeDTO getSizeById(int sizeId) throws Exception {
+    String sql = "SELECT size_id, ten_size FROM SizeMon WHERE size_id=?";
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, sizeId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) return null;
+            SizeDTO s = new SizeDTO();
+            s.setSizeId(rs.getInt("size_id"));
+            s.setTenSize(rs.getString("ten_size"));
+            return s;
+        }
+    }
+}
+
+// CRUD hóa đơn bắp nước (nếu bạn cần quản trị)
+public List<HoaDonBapNuocDTO> getAllHoaDon() throws Exception {
+    String sql = "SELECT hoa_don_id, nhan_vien_id, ngay_lap, tong_tien FROM HoaDonBapNuoc ORDER BY ngay_lap DESC";
+    List<HoaDonBapNuocDTO> list = new ArrayList<>();
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            HoaDonBapNuocDTO hd = new HoaDonBapNuocDTO();
+            hd.setHoaDonId(rs.getInt("hoa_don_id"));
+            hd.setNhanVienId(rs.getInt("nhan_vien_id"));
+            hd.setNgayLap(rs.getTimestamp("ngay_lap"));
+            hd.setTongTien(rs.getLong("tong_tien"));
+            list.add(hd);
+        }
+    }
+    return list;
+}
+
+public void deleteHoaDon(int hoaDonId) throws Exception {
+    String delCt = "DELETE FROM ChiTietHoaDonBapNuoc WHERE hoa_don_id=?";
+    String delHd = "DELETE FROM HoaDonBapNuoc WHERE hoa_don_id=?";
+    try (Connection con = getConnection()) {
+        con.setAutoCommit(false);
+        try (PreparedStatement ps1 = con.prepareStatement(delCt);
+             PreparedStatement ps2 = con.prepareStatement(delHd)) {
+            ps1.setInt(1, hoaDonId);
+            ps1.executeUpdate();
+
+            ps2.setInt(1, hoaDonId);
+            ps2.executeUpdate();
+
+            con.commit();
+        } catch (Exception ex) {
+            con.rollback();
+            throw ex;
+        } finally {
+            con.setAutoCommit(true);
+        }
+    }
+}
+
     }

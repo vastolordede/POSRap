@@ -217,6 +217,11 @@ public class BanVeView extends JPanel {
         SuatChieuDTO suat = (SuatChieuDTO) cbSuat.getSelectedItem();
         if (suat == null) return;
 
+        
+        System.out.println("DEBUG suatChieuId=" + suat.getSuatChieuId()
+            + ", phongChieuId=" + suat.getPhongChieuId()
+            + ", gia=" + suat.getGia());
+
         try {
             List<GheDTO> ghe = bus.laySoDoGhe(suat.getSuatChieuId());
             Set<Integer> gheDaBan = bus.getGheDaBan(suat.getSuatChieuId());
