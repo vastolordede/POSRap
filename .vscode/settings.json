@@ -9,6 +9,7 @@
   "java.jdt.ls.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-11.0.29.7-hotspot",
   "java.project.referencedLibraries": [
     "lib/**/*.jar",
-    "libs/mssql-jdbc-13.2.1.jre11.jar"
+    "libs/mssql-jdbc-13.2.1.jre11.jar",
+    "libs/postgresql-42.7.8.jar"
   ]
 }

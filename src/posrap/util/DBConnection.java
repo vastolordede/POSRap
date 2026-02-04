@@ -7,24 +7,23 @@ import java.sql.SQLException;
 public class DBConnection {
 
     private static final String URL =
-        "jdbc:sqlserver://localhost:1433;"
-      + "databaseName=RapChieuPhim;"
-      + "encrypt=false;"
-      + "trustServerCertificate=true";
+        "jdbc:postgresql://ep-icy-firefly-a14rm4re-pooler.ap-southeast-1.aws.neon.tech:5432/neondb"
+      + "?sslmode=require";
 
-    private static final String USER = "sa";
-    private static final String PASS = "123456";
+    private static final String USER = "neondb_owner";
+    private static final String PASS = "npg_OxQb4aepf5cr";
 
     static {
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            System.out.println("✅ SQL Server JDBC Driver loaded");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("❌ Không load được JDBC Driver", e);
+            Class.forName("org.postgresql.Driver");
+            System.out.println("Driver loaded OK");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public static Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException  {
+        System.out.println("TRY CONNECT NEON...");
         return DriverManager.getConnection(URL, USER, PASS);
     }
 }

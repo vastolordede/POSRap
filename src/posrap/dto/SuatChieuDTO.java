@@ -1,6 +1,5 @@
 package posrap.dto;
 
-import java.util.Date;
 import java.sql.Timestamp;
 
 public class SuatChieuDTO {

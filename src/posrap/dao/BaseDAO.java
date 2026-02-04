@@ -6,8 +6,7 @@ import posrap.util.DBConnection;
 
 public class BaseDAO {
 
-    // để các DAO kế thừa gọi được
-    protected Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         return DBConnection.getConnection();
     }
 }

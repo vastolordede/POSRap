@@ -70,4 +70,31 @@
     nbproject/build-impl.xml file. 
 
     -->
+        <!-- Run TestDB with all jars in /libs -->
+    <target name="run-testdb" depends="compile">
+        <java classname="posrap.TestDB" fork="true" failonerror="true">
+            <classpath>
+                <!-- compiled classes -->
+                <pathelement location="${build.classes.dir}"/>
+                <!-- all jars inside libs -->
+                <fileset dir="libs">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </java>
+    </target>
+    <!-- Force Ant (NetBeans build-impl) to use JDK 11 -->
+    <target name="-pre-init">
+        <!-- sửa path này đúng với JDK 11 trên máy bạn -->
+        <property name="jdk11.home" location="C:\Program Files\Eclipse Adoptium\jdk-11.0.29.7-hotspot"/>
+
+        <!-- ép Ant dùng tools.jar của JDK 11 để compile (javac) -->
+        <property name="platforms.JDK_11.home" location="${jdk11.home}"/>
+        <property name="platform.active" value="JDK_11"/>
+    </target>
+    <target name="-post-init">
+        <property name="javac.source" value="11"/>
+        <property name="javac.target" value="11"/>
+    </target>
+
 </project>

@@ -266,9 +266,9 @@ public HoaDonBapNuocDTO taoHoaDon(List<ChiTietHoaDonBapNuocDTO> ct) throws Excep
         long tong = tinhTongTien(con, ct);
 
         String sqlHD =
-                "INSERT INTO HoaDonBapNuoc(nhan_vien_id, ngay_lap, tong_tien) " +
-                "OUTPUT INSERTED.hoa_don_id " +
-                "VALUES (?, GETDATE(), ?)";
+                "INSERT INTO HoaDonBapNuoc(nhan_vien_id, ngay_lap, tong_tien)" +
+                "VALUES (?, NOW(), ?) " +
+                "RETURNING hoa_don_id";
 
         int hoaDonId;
         try (PreparedStatement ps = con.prepareStatement(sqlHD)) {
