@@ -37,76 +37,76 @@ public class QuanTriRapView extends JPanel {
         return wrapCrudTable(table,
                 () -> reloadPhim(model),
                 () -> {
-                    try {
-                        String ten = JOptionPane.showInputDialog(this, "Ten phim:");
-                        if (ten == null || ten.trim().isEmpty()) return;
+                    JTextField txtTen = new JTextField();
+                    JTextField txtTheLoai = new JTextField();
+                    JTextField txtThoiLuong = new JTextField();
+                    JTextField txtDoTuoi = new JTextField();
+                    JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"Dang chieu", "Ngung chieu", "Sap chieu"});
 
-                        String theLoai = JOptionPane.showInputDialog(this, "The loai:");
-                        if (theLoai == null || theLoai.trim().isEmpty()) return;
+                    JPanel p = new JPanel(new GridLayout(5, 2, 10, 10));
+                    p.add(new JLabel("Tên phim:")); p.add(txtTen);
+                    p.add(new JLabel("Thể loại:")); p.add(txtTheLoai);
+                    p.add(new JLabel("Thời lượng (phút):")); p.add(txtThoiLuong);
+                    p.add(new JLabel("Độ tuổi:")); p.add(txtDoTuoi);
+                    p.add(new JLabel("Trạng thái:")); p.add(cbTrangThai);
 
-                        String tlStr = JOptionPane.showInputDialog(this, "Thoi luong (phut):");
-                        if (tlStr == null || tlStr.trim().isEmpty()) return;
-
-                        String doTuoi = JOptionPane.showInputDialog(this, "Do tuoi (P/C13/C16/C18...):");
-                        if (doTuoi == null || doTuoi.trim().isEmpty()) return;
-
-                        String trangThai = JOptionPane.showInputDialog(this, "Trang thai (dang_hoat_dong/..):");
-                        if (trangThai == null || trangThai.trim().isEmpty()) return;
-
-                        PhimDTO p = new PhimDTO();
-                        p.setTenPhim(ten.trim());
-                        p.setTheLoai(theLoai.trim());
-                        p.setThoiLuong(Integer.parseInt(tlStr.trim()));
-                        p.setDoTuoi(doTuoi.trim());
-                        p.setTrangThai(trangThai.trim());
-
-                        dao.insertPhim(p);
-                        reloadPhim(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    if (JOptionPane.showConfirmDialog(this, p, "Thêm Phim Mới", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+                        try {
+                            PhimDTO f = new PhimDTO();
+                            f.setTenPhim(txtTen.getText().trim());
+                            f.setTheLoai(txtTheLoai.getText().trim());
+                            f.setThoiLuong(Integer.parseInt(txtThoiLuong.getText().trim()));
+                            f.setDoTuoi(txtDoTuoi.getText().trim());
+                            f.setTrangThai((String) cbTrangThai.getSelectedItem());
+                            dao.insertPhim(f);
+                            reloadPhim(model);
+                        } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi: Kiểm tra lại số liệu nhập!"); }
+                    }
                 },
                 () -> {
                     int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de sua."); return; }
+                    if (r < 0) { UiUtil.showInfo(this, "Chọn 1 dòng để sửa."); return; }
+                    
+                    JTextField txtTen = new JTextField(model.getValueAt(r, 1).toString());
+                    JTextField txtTheLoai = new JTextField(model.getValueAt(r, 2).toString());
+                    JTextField txtThoiLuong = new JTextField(model.getValueAt(r, 3).toString());
+                    JTextField txtDoTuoi = new JTextField(model.getValueAt(r, 4).toString());
+                    JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"Dang chieu", "Ngung chieu", "Sap chieu"});
+                    cbTrangThai.setSelectedItem(model.getValueAt(r, 5).toString());
 
-                    try {
-                        int id = ((Number) model.getValueAt(r, 0)).intValue();
+                    JPanel p = new JPanel(new GridLayout(5, 2, 10, 10));
+                    p.add(new JLabel("Tên phim:")); p.add(txtTen);
+                    p.add(new JLabel("Thể loại:")); p.add(txtTheLoai);
+                    p.add(new JLabel("Thời lượng (phút):")); p.add(txtThoiLuong);
+                    p.add(new JLabel("Độ tuổi:")); p.add(txtDoTuoi);
+                    p.add(new JLabel("Trạng thái:")); p.add(cbTrangThai);
 
-                        String ten = JOptionPane.showInputDialog(this, "Ten phim:", model.getValueAt(r, 1));
-                        if (ten == null || ten.trim().isEmpty()) return;
-
-                        String theLoai = JOptionPane.showInputDialog(this, "The loai:", model.getValueAt(r, 2));
-                        if (theLoai == null || theLoai.trim().isEmpty()) return;
-
-                        String tlStr = JOptionPane.showInputDialog(this, "Thoi luong (phut):", model.getValueAt(r, 3));
-                        if (tlStr == null || tlStr.trim().isEmpty()) return;
-
-                        String doTuoi = JOptionPane.showInputDialog(this, "Do tuoi:", model.getValueAt(r, 4));
-                        if (doTuoi == null || doTuoi.trim().isEmpty()) return;
-
-                        String trangThai = JOptionPane.showInputDialog(this, "Trang thai:", model.getValueAt(r, 5));
-                        if (trangThai == null || trangThai.trim().isEmpty()) return;
-
-                        PhimDTO p = new PhimDTO();
-                        p.setPhimId(id);
-                        p.setTenPhim(ten.trim());
-                        p.setTheLoai(theLoai.trim());
-                        p.setThoiLuong(Integer.parseInt(tlStr.trim()));
-                        p.setDoTuoi(doTuoi.trim());
-                        p.setTrangThai(trangThai.trim());
-
-                        dao.updatePhim(p);
-                        reloadPhim(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    if (JOptionPane.showConfirmDialog(this, p, "Sửa Phim", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+                        try {
+                            int id = ((Number) model.getValueAt(r, 0)).intValue();
+                            PhimDTO f = new PhimDTO();
+                            f.setPhimId(id);
+                            f.setTenPhim(txtTen.getText().trim());
+                            f.setTheLoai(txtTheLoai.getText().trim());
+                            f.setThoiLuong(Integer.parseInt(txtThoiLuong.getText().trim()));
+                            f.setDoTuoi(txtDoTuoi.getText().trim());
+                            f.setTrangThai((String) cbTrangThai.getSelectedItem());
+                            dao.updatePhim(f);
+                            reloadPhim(model);
+                        } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi: Kiểm tra lại số liệu nhập!"); }
+                    }
                 },
                 () -> {
-                    int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de xoa."); return; }
+                    int[] rows = table.getSelectedRows();
+                    if (rows.length == 0) { UiUtil.showInfo(this, "Kéo chuột chọn nhiều dòng để xóa."); return; }
                     try {
-                        if (!UiUtil.confirm(this, "Xoa phim nay?")) return;
-                        int id = ((Number) model.getValueAt(r, 0)).intValue();
-                        dao.deletePhim(id);
+                        if (!UiUtil.confirm(this, "Xóa " + rows.length + " phim đã chọn?")) return;
+                        for (int i = 0; i < rows.length; i++) {
+                            int id = ((Number) model.getValueAt(rows[i], 0)).intValue();
+                            dao.deletePhim(id);
+                        }
                         reloadPhim(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi: " + ex.getMessage()); }
                 }
         );
     }
@@ -132,8 +132,6 @@ public class QuanTriRapView extends JPanel {
 
     /* ===================== TAB PHONG ===================== */
     private JPanel buildPhongTab() {
-        // Theo diagram: PhongChieu chỉ có (id, ten_phong, suc_chua)
-        // Nếu DB bạn có thêm trang_thai thì thêm cột "Trang thai" ở đây + addRow tương ứng.
         DefaultTableModel model = new DefaultTableModel(
                 new Object[]{"ID", "Ten phong", "Suc chua"}, 0
         );
@@ -143,51 +141,66 @@ public class QuanTriRapView extends JPanel {
         return wrapCrudTable(table,
                 () -> reloadPhong(model),
                 () -> {
-                    try {
-                        String tenPhong = JOptionPane.showInputDialog(this, "Ten phong:");
-                        if (tenPhong == null || tenPhong.trim().isEmpty()) return;
+                   JTextField txtTen = new JTextField();
+                    JTextField txtSucChua = new JTextField("20"); 
 
-                        String sucChuaStr = JOptionPane.showInputDialog(this, "Suc chua:");
-                        if (sucChuaStr == null || sucChuaStr.trim().isEmpty()) return;
-
-                        PhongChieuDTO p = new PhongChieuDTO();
-                        p.setTenPhong(tenPhong.trim());
-                        p.setSucChua(Integer.parseInt(sucChuaStr.trim()));
-
-                        dao.insertPhong(p);
-                        reloadPhong(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    JPanel p = new JPanel(new GridLayout(3, 2, 10, 10));
+                    p.add(new JLabel("Tên phòng:")); p.add(txtTen);
+                    p.add(new JLabel("Sức chứa:")); p.add(txtSucChua);
+                    
+                    if (JOptionPane.showConfirmDialog(this, p, "Thêm Phòng", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+                        try {
+                            PhongChieuDTO pc = new PhongChieuDTO();
+                            pc.setTenPhong(txtTen.getText().trim());
+                            pc.setSucChua(Integer.parseInt(txtSucChua.getText().trim()));
+                            
+                            dao.insertPhong(pc);
+    
+                            reloadPhong(model);
+                            updatelistPhong();
+                        } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi nhập liệu: " + ex.getMessage()); }
+                    }
                 },
                 () -> {
                     int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de sua."); return; }
-                    try {
-                        int id = ((Number) model.getValueAt(r, 0)).intValue();
+                    if (r < 0) { UiUtil.showInfo(this, "Chọn 1 dòng để sửa."); return; }
+                    
+                    JTextField txtTen = new JTextField(model.getValueAt(r, 1).toString());
+                    String oldSucChua = model.getColumnCount() > 2 ? model.getValueAt(r, 2).toString() : "50";
+                    JTextField txtSucChua = new JTextField(oldSucChua);
 
-                        String tenPhong = JOptionPane.showInputDialog(this, "Ten phong:", model.getValueAt(r, 1));
-                        if (tenPhong == null || tenPhong.trim().isEmpty()) return;
 
-                        String sucChuaStr = JOptionPane.showInputDialog(this, "Suc chua:", model.getValueAt(r, 2));
-                        if (sucChuaStr == null || sucChuaStr.trim().isEmpty()) return;
-
-                        PhongChieuDTO p = new PhongChieuDTO();
-                        p.setPhongChieuId(id);
-                        p.setTenPhong(tenPhong.trim());
-                        p.setSucChua(Integer.parseInt(sucChuaStr.trim()));
-
-                        dao.updatePhong(p);
-                        reloadPhong(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    JPanel p = new JPanel(new GridLayout(3, 2, 10, 10));
+                    p.add(new JLabel("Tên phòng:")); p.add(txtTen);
+                    p.add(new JLabel("Sức chứa:")); p.add(txtSucChua);
+                    
+                    if (JOptionPane.showConfirmDialog(this, p, "Sửa Phòng", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+                        try {
+                            int id = ((Number) model.getValueAt(r, 0)).intValue();
+                            PhongChieuDTO pc = new PhongChieuDTO();
+                            pc.setPhongChieuId(id);
+                            pc.setTenPhong(txtTen.getText().trim());
+                            pc.setSucChua(Integer.parseInt(txtSucChua.getText().trim()));
+                            
+                            dao.updatePhong(pc);
+                            
+                            reloadPhong(model);
+                            updatelistPhong();
+                        } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi nhập liệu: " + ex.getMessage()); }
+                    }
                 },
                 () -> {
-                    int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de xoa."); return; }
+                    int[] rows = table.getSelectedRows();
+                    if (rows.length == 0) { UiUtil.showInfo(this, "Chọn nhiều dòng để xóa."); return; }
                     try {
-                        if (!UiUtil.confirm(this, "Xoa phong nay? (co the anh huong ghe/suat chieu)")) return;
-                        int id = ((Number) model.getValueAt(r, 0)).intValue();
-                        dao.deletePhong(id);
+                        if (!UiUtil.confirm(this, "Xóa " + rows.length + " phòng đã chọn?")) return;
+                        for (int i = 0; i < rows.length; i++) {
+                            int id = ((Number) model.getValueAt(rows[i], 0)).intValue();
+                            dao.deletePhong(id); 
+                        }
                         reloadPhong(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                        updatelistPhong();
+                    } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi: " + ex.getMessage()); }
                 }
         );
     }
@@ -207,76 +220,107 @@ public class QuanTriRapView extends JPanel {
         }
     }
 
-    /* ===================== TAB GHE ===================== */
+    private JPanel pnlSoDoGheWrapper = new JPanel(new GridBagLayout()); 
+    private JComboBox<String> cbLPhongChieu = new JComboBox<>();
+    private java.util.List<PhongChieuDTO> listPhongCache = new java.util.ArrayList<>();
+
+    // ===================== TAB GHE ===================== 
     private JPanel buildGheTab() {
+        JPanel root = new JPanel(new BorderLayout(10, 10));
+        root.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         DefaultTableModel model = new DefaultTableModel(
                 new Object[]{"ID", "Phong ID", "Hang", "So", "Loai ghe"}, 0
-        );
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        };
         JTable table = new JTable(model);
-        reloadGhe(model);
+        JPanel pnlTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+        
+        pnlTop.add(new JLabel("Xem phòng:"));
+        
+        cbLPhongChieu.addActionListener(e -> taoGhe(model));
+        pnlTop.add(cbLPhongChieu);
+        
+        pnlTop.add(new JLabel(" | "));
 
-        return wrapCrudTable(table,
-                () -> reloadGhe(model),
-                () -> {
-                    try {
-                        int phongId = Integer.parseInt(JOptionPane.showInputDialog(this, "Phong ID:"));
-                        String hang = JOptionPane.showInputDialog(this, "Hang ghe (A/B/C...):");
-                        if (hang == null || hang.trim().isEmpty()) return;
+        JButton btnThem = new JButton("Thêm");
+        JButton btnSua = new JButton("Sửa");
+        JButton btnXoa = new JButton("Xóa");
+        JButton btnTaiLai = new JButton("Tải lại");
 
-                        int so = Integer.parseInt(JOptionPane.showInputDialog(this, "So ghe:"));
-                        String loai = JOptionPane.showInputDialog(this, "Loai ghe:");
-                        if (loai == null || loai.trim().isEmpty()) return;
+        pnlTop.add(btnThem);
+        pnlTop.add(btnSua);
+        pnlTop.add(btnXoa);
+        pnlTop.add(btnTaiLai);
 
-                        GheDTO g = new GheDTO();
-                        g.setPhongChieuId(phongId);
-                        g.setHangGhe(hang.trim());
-                        g.setSoGhe(so);
-                        g.setLoaiGhe(loai.trim());
+        root.add(pnlTop, BorderLayout.NORTH);
+        btnThem.addActionListener(e -> DialogThem(model));
 
-                        dao.insertGhe(g);
-                        reloadGhe(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
-                },
-                () -> {
-                    int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de sua."); return; }
-                    try {
-                        int gheId = ((Number) model.getValueAt(r, 0)).intValue();
+        btnSua.addActionListener(e -> {
+            int r = table.getSelectedRow();
+            if (r < 0) { UiUtil.showInfo(this, "Chọn 1 dòng để sửa."); return; }
+            try {
+                int gheId = ((Number) model.getValueAt(r, 0)).intValue();
+                String phongIdStr = JOptionPane.showInputDialog(this, "Phong ID:", model.getValueAt(r, 1));
+                if (phongIdStr == null || phongIdStr.trim().isEmpty()) return;
+                String hang = JOptionPane.showInputDialog(this, "Hang:", model.getValueAt(r, 2));
+                if (hang == null || hang.trim().isEmpty()) return;
+                String soStr = JOptionPane.showInputDialog(this, "So:", model.getValueAt(r, 3));
+                if (soStr == null || soStr.trim().isEmpty()) return;
+                String loai = JOptionPane.showInputDialog(this, "Loai ghe:", model.getValueAt(r, 4));
+                if (loai == null || loai.trim().isEmpty()) return;
 
-                        String phongIdStr = JOptionPane.showInputDialog(this, "Phong ID:", model.getValueAt(r, 1));
-                        if (phongIdStr == null || phongIdStr.trim().isEmpty()) return;
+                GheDTO g = new GheDTO();
+                g.setGheId(gheId);
+                g.setPhongChieuId(Integer.parseInt(phongIdStr.trim()));
+                g.setHangGhe(hang.trim());
+                g.setSoGhe(Integer.parseInt(soStr.trim()));
+                g.setLoaiGhe(loai.trim());
 
-                        String hang = JOptionPane.showInputDialog(this, "Hang:", model.getValueAt(r, 2));
-                        if (hang == null || hang.trim().isEmpty()) return;
+                dao.updateGhe(g);
+                taoGhe(model);
+            } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+        });
 
-                        String soStr = JOptionPane.showInputDialog(this, "So:", model.getValueAt(r, 3));
-                        if (soStr == null || soStr.trim().isEmpty()) return;
-
-                        String loai = JOptionPane.showInputDialog(this, "Loai ghe:", model.getValueAt(r, 4));
-                        if (loai == null || loai.trim().isEmpty()) return;
-
-                        GheDTO g = new GheDTO();
-                        g.setGheId(gheId);
-                        g.setPhongChieuId(Integer.parseInt(phongIdStr.trim()));
-                        g.setHangGhe(hang.trim());
-                        g.setSoGhe(Integer.parseInt(soStr.trim()));
-                        g.setLoaiGhe(loai.trim());
-
-                        dao.updateGhe(g);
-                        reloadGhe(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
-                },
-                () -> {
-                    int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de xoa."); return; }
-                    try {
-                        if (!UiUtil.confirm(this, "Xoa ghe nay?")) return;
-                        int gheId = ((Number) model.getValueAt(r, 0)).intValue();
-                        dao.deleteGhe(gheId);
-                        reloadGhe(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+        btnXoa.addActionListener(e -> {
+            int[] rows = table.getSelectedRows();
+            if (rows.length == 0) { UiUtil.showInfo(this, "Kéo chuột chọn nhiều dòng trong bảng để xóa."); return; }
+            try {
+                if (!UiUtil.confirm(this, "Xóa " + rows.length + " ghế đã chọn?")) return;
+                
+                for (int i = 0; i < rows.length; i++) {
+                    int gheId = ((Number) model.getValueAt(rows[i], 0)).intValue();
+                    dao.deleteGhe(gheId); 
                 }
-        );
+                taoGhe(model); 
+            } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+        });
+
+        btnTaiLai.addActionListener(e -> {
+            updatelistPhong();
+            taoGhe(model);
+        });
+
+        updatelistPhong();
+        taoGhe(model);
+
+        pnlSoDoGheWrapper.setBackground(Color.WHITE);
+        JScrollPane scrollSoDo = new JScrollPane(pnlSoDoGheWrapper);
+        scrollSoDo.setBorder(BorderFactory.createTitledBorder("Sơ đồ trực quan"));
+        
+        JScrollPane scrollTable = new JScrollPane(table);
+        scrollTable.setBorder(BorderFactory.createTitledBorder("Dữ liệu bảng"));
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollTable, scrollSoDo);
+        split.setResizeWeight(0.4); 
+        root.add(split, BorderLayout.CENTER);
+
+        reloadGhe(model);
+        return root;
     }
 
     private void reloadGhe(DefaultTableModel model) {
@@ -308,71 +352,75 @@ public class QuanTriRapView extends JPanel {
         return wrapCrudTable(table,
                 () -> reloadSuatChieu(model),
                 () -> {
-                    try {
-                        int phimId = Integer.parseInt(JOptionPane.showInputDialog(this, "Phim ID:"));
-                        int phongId = Integer.parseInt(JOptionPane.showInputDialog(this, "Phong ID:"));
+                    JTextField txtPhimId = new JTextField();
+                    JTextField txtPhongId = new JTextField();
+                    JTextField txtBatDau = new JTextField("2026-03-15 18:00:00");
+                    JTextField txtKetThuc = new JTextField("2026-03-15 20:00:00");
+                    JTextField txtGia = new JTextField("60000");
 
-                        String bd = JOptionPane.showInputDialog(this, "Bat dau (YYYY-MM-DD HH:mm:ss):");
-                        if (bd == null || bd.trim().isEmpty()) return;
+                    JPanel p = new JPanel(new GridLayout(5, 2, 10, 10));
+                    p.add(new JLabel("Phim ID:")); p.add(txtPhimId);
+                    p.add(new JLabel("Phòng ID:")); p.add(txtPhongId);
+                    p.add(new JLabel("Bắt đầu (N-T-N G:P:S):")); p.add(txtBatDau);
+                    p.add(new JLabel("Kết thúc (N-T-N G:P:S):")); p.add(txtKetThuc);
+                    p.add(new JLabel("Giá vé (VNĐ):")); p.add(txtGia);
 
-                        String kt = JOptionPane.showInputDialog(this, "Ket thuc (YYYY-MM-DD HH:mm:ss):");
-                        if (kt == null || kt.trim().isEmpty()) return;
-
-                        double gia = Double.parseDouble(JOptionPane.showInputDialog(this, "Gia:"));
-
-                        SuatChieuDTO s = new SuatChieuDTO();
-                        s.setPhimId(phimId);
-                        s.setPhongChieuId(phongId);
-                        s.setBatDau(Timestamp.valueOf(bd.trim()));
-                        s.setKetThuc(Timestamp.valueOf(kt.trim()));
-                        s.setGia(gia);
-
-                        dao.insertSuatChieu(s);
-                        reloadSuatChieu(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    if (JOptionPane.showConfirmDialog(this, p, "Thêm Suất Chiếu", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+                        try {
+                            SuatChieuDTO sc = new SuatChieuDTO();
+                            sc.setPhimId(Integer.parseInt(txtPhimId.getText().trim()));
+                            sc.setPhongChieuId(Integer.parseInt(txtPhongId.getText().trim()));
+                            sc.setBatDau(java.sql.Timestamp.valueOf(txtBatDau.getText().trim()));
+                            sc.setKetThuc(java.sql.Timestamp.valueOf(txtKetThuc.getText().trim()));
+                            sc.setGia(Double.parseDouble(txtGia.getText().trim()));
+                            dao.insertSuatChieu(sc);
+                            reloadSuatChieu(model);
+                        } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi nhập liệu: Sai định dạng ngày giờ hoặc số!"); }
+                    }
                 },
                 () -> {
                     int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de sua."); return; }
-                    try {
-                        int id = ((Number) model.getValueAt(r, 0)).intValue();
+                    if (r < 0) { UiUtil.showInfo(this, "Chọn 1 dòng để sửa."); return; }
+                    
+                    JTextField txtPhimId = new JTextField(model.getValueAt(r, 1).toString());
+                    JTextField txtPhongId = new JTextField(model.getValueAt(r, 2).toString());
+                    JTextField txtBatDau = new JTextField(model.getValueAt(r, 3).toString());
+                    JTextField txtKetThuc = new JTextField(model.getValueAt(r, 4).toString());
+                    JTextField txtGia = new JTextField(model.getValueAt(r, 5).toString());
 
-                        String phimIdStr = JOptionPane.showInputDialog(this, "Phim ID:", model.getValueAt(r, 1));
-                        if (phimIdStr == null || phimIdStr.trim().isEmpty()) return;
+                    JPanel p = new JPanel(new GridLayout(5, 2, 10, 10));
+                    p.add(new JLabel("Phim ID:")); p.add(txtPhimId);
+                    p.add(new JLabel("Phòng ID:")); p.add(txtPhongId);
+                    p.add(new JLabel("Bắt đầu:")); p.add(txtBatDau);
+                    p.add(new JLabel("Kết thúc:")); p.add(txtKetThuc);
+                    p.add(new JLabel("Giá vé:")); p.add(txtGia);
 
-                        String phongIdStr = JOptionPane.showInputDialog(this, "Phong ID:", model.getValueAt(r, 2));
-                        if (phongIdStr == null || phongIdStr.trim().isEmpty()) return;
-
-                        String bd = JOptionPane.showInputDialog(this, "Bat dau (YYYY-MM-DD HH:mm:ss):", model.getValueAt(r, 3));
-                        if (bd == null || bd.trim().isEmpty()) return;
-
-                        String kt = JOptionPane.showInputDialog(this, "Ket thuc (YYYY-MM-DD HH:mm:ss):", model.getValueAt(r, 4));
-                        if (kt == null || kt.trim().isEmpty()) return;
-
-                        String giaStr = JOptionPane.showInputDialog(this, "Gia:", model.getValueAt(r, 5));
-                        if (giaStr == null || giaStr.trim().isEmpty()) return;
-
-                        SuatChieuDTO s = new SuatChieuDTO();
-                        s.setSuatChieuId(id);
-                        s.setPhimId(Integer.parseInt(phimIdStr.trim()));
-                        s.setPhongChieuId(Integer.parseInt(phongIdStr.trim()));
-                        s.setBatDau(Timestamp.valueOf(bd.trim()));
-                        s.setKetThuc(Timestamp.valueOf(kt.trim()));
-                        s.setGia(Double.parseDouble(giaStr.trim()));
-
-                        dao.updateSuatChieu(s);
-                        reloadSuatChieu(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    if (JOptionPane.showConfirmDialog(this, p, "Sửa Suất Chiếu", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+                        try {
+                            int id = ((Number) model.getValueAt(r, 0)).intValue();
+                            SuatChieuDTO sc = new SuatChieuDTO();
+                            sc.setSuatChieuId(id);
+                            sc.setPhimId(Integer.parseInt(txtPhimId.getText().trim()));
+                            sc.setPhongChieuId(Integer.parseInt(txtPhongId.getText().trim()));
+                            sc.setBatDau(java.sql.Timestamp.valueOf(txtBatDau.getText().trim()));
+                            sc.setKetThuc(java.sql.Timestamp.valueOf(txtKetThuc.getText().trim()));
+                            sc.setGia(Double.parseDouble(txtGia.getText().trim()));
+                            dao.updateSuatChieu(sc);
+                            reloadSuatChieu(model);
+                        } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi nhập liệu: Sai định dạng ngày giờ hoặc số!"); }
+                    }
                 },
                 () -> {
-                    int r = table.getSelectedRow();
-                    if (r < 0) { UiUtil.showInfo(this, "Chon dong de xoa."); return; }
+                    int[] rows = table.getSelectedRows();
+                    if (rows.length == 0) { UiUtil.showInfo(this, "Kéo chuột chọn nhiều dòng để xóa."); return; }
                     try {
-                        if (!UiUtil.confirm(this, "Xoa suat chieu nay?")) return;
-                        int id = ((Number) model.getValueAt(r, 0)).intValue();
-                        dao.deleteSuatChieu(id);
+                        if (!UiUtil.confirm(this, "Xóa " + rows.length + " suất chiếu đã chọn?")) return;
+                        for (int i = 0; i < rows.length; i++) {
+                            int id = ((Number) model.getValueAt(rows[i], 0)).intValue();
+                            dao.deleteSuatChieu(id);
+                        }
                         reloadSuatChieu(model);
-                    } catch (Exception ex) { UiUtil.showInfo(this, ex.getMessage()); }
+                    } catch (Exception ex) { UiUtil.showInfo(this, "Lỗi: " + ex.getMessage()); }
                 }
         );
     }
@@ -425,5 +473,170 @@ public class QuanTriRapView extends JPanel {
         root.add(top, BorderLayout.NORTH);
         root.add(new JScrollPane(table), BorderLayout.CENTER);
         return root;
+    }
+
+    private void updatelistPhong() {
+        try {
+            java.awt.event.ActionListener[] listeners = cbLPhongChieu.getActionListeners();
+            for (java.awt.event.ActionListener l : listeners) cbLPhongChieu.removeActionListener(l);
+            
+            listPhongCache = dao.getAllPhongChieu();
+            cbLPhongChieu.removeAllItems();
+            for (PhongChieuDTO p : listPhongCache) {
+                cbLPhongChieu.addItem(p.getTenPhong());
+            }
+            if (!listPhongCache.isEmpty()) cbLPhongChieu.setSelectedIndex(0);
+
+            for (java.awt.event.ActionListener l : listeners) cbLPhongChieu.addActionListener(l);
+        } catch (Exception ex) { }
+    }
+
+    private void taoGhe(DefaultTableModel model) {
+        int idx = cbLPhongChieu.getSelectedIndex();
+        if (idx < 0 || listPhongCache.isEmpty()) {
+            model.setRowCount(0);
+            pnlSoDoGheWrapper.removeAll();
+            pnlSoDoGheWrapper.repaint();
+            return;
+        }
+
+        int phongId = listPhongCache.get(idx).getPhongChieuId();
+        pnlSoDoGheWrapper.removeAll(); 
+
+        pnlSoDoGheWrapper.setLayout(new GridBagLayout());
+
+        try {
+            java.util.List<GheDTO> dsGhe = dao.getGheByPhong(phongId);
+            
+            model.setRowCount(0);
+            for (GheDTO g : dsGhe) {
+                model.addRow(new Object[]{
+                    g.getGheId(), g.getPhongChieuId(), g.getHangGhe(), g.getSoGhe(), g.getLoaiGhe()
+                });
+            }
+
+            if (dsGhe.isEmpty()) {
+                pnlSoDoGheWrapper.add(new JLabel("Phòng này chưa có sơ đồ. Bấm 'Tạo sơ đồ' nhé!"));
+            } else {
+                JPanel pnlRows = new JPanel();
+                pnlRows.setLayout(new BoxLayout(pnlRows, BoxLayout.Y_AXIS)); 
+                pnlRows.setBackground(Color.WHITE);
+
+                java.util.Map<String, java.util.List<GheDTO>> rowMap = new java.util.TreeMap<>();
+                for (GheDTO g : dsGhe) {
+                    String hang = g.getHangGhe();
+                    if (hang != null && !hang.trim().isEmpty()) {
+                        rowMap.computeIfAbsent(hang.trim().toUpperCase(), k -> new java.util.ArrayList<>()).add(g);
+                    }
+                }
+
+                for (java.util.Map.Entry<String, java.util.List<GheDTO>> entry : rowMap.entrySet()) {
+                    JPanel pnlOneRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0)); 
+                    pnlOneRow.setBackground(Color.WHITE);
+                    
+                    java.util.List<GheDTO> seatsInRow = entry.getValue();
+                    seatsInRow.sort(java.util.Comparator.comparingInt(GheDTO::getSoGhe));
+
+                    int totalSeats = seatsInRow.size();
+                    int gapLoiDi = 60; 
+
+                    for (int i = 0; i < totalSeats; i++) {
+                        GheDTO g = seatsInRow.get(i);
+                        JToggleButton btn = new JToggleButton(g.getHangGhe() + g.getSoGhe()); 
+                        
+                        
+                        btn.setPreferredSize(new Dimension(95, 95));
+                        btn.setFont(new Font("Arial", Font.BOLD, 13)); 
+                        btn.setMargin(new Insets(2, 2, 2, 2));
+                        
+                        String loai = g.getLoaiGhe();
+                        boolean isVip = (loai != null && loai.trim().equalsIgnoreCase("vip"));
+                        btn.setBackground(isVip ? new Color(241, 196, 15) : new Color(224, 224, 224));
+                        
+                        pnlOneRow.add(btn);
+
+                        if (totalSeats >= 4) { 
+                            if (totalSeats % 2 == 0) { 
+                                if (i == (totalSeats / 2) - 1) {
+                                    pnlOneRow.add(Box.createHorizontalStrut(gapLoiDi));
+                                }
+                            } else { 
+                                if (i == 0 || i == totalSeats - 2) {
+                                    pnlOneRow.add(Box.createHorizontalStrut(gapLoiDi));
+                                }
+                            }
+                        }
+                    }
+                    
+                    pnlRows.add(pnlOneRow); 
+                    pnlRows.add(Box.createVerticalStrut(20)); 
+                }
+                
+               pnlSoDoGheWrapper.add(pnlRows);
+            }
+            
+            pnlSoDoGheWrapper.revalidate();
+            pnlSoDoGheWrapper.repaint();
+            
+        } catch (Exception ex) { 
+            ex.printStackTrace();
+            UiUtil.showInfo(this, "Lỗi tải sơ đồ: " + ex.getMessage());
+        }
+    }
+
+    private void DialogThem(DefaultTableModel model) {
+        try {
+            if (listPhongCache.isEmpty()) {
+                UiUtil.showInfo(this, "Chưa có phòng chiếu nào! Vui lòng tạo phòng trước."); 
+                return;
+            }
+
+            JComboBox<String> cbPhong = new JComboBox<>();
+            for (PhongChieuDTO p : listPhongCache) {
+                cbPhong.addItem(p.getTenPhong());
+            }
+
+            int currentSelected = cbLPhongChieu.getSelectedIndex();
+            if(currentSelected >= 0 && currentSelected < listPhongCache.size()) {
+                cbPhong.setSelectedIndex(currentSelected);
+            }
+
+            JTextField txtSoHang = new JTextField("5");
+            JTextField txtTongGhe = new JTextField("20");
+            JComboBox<String> cbLoaiGhe = new JComboBox<>(new String[]{"thuong", "vip"});
+
+            JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+            panel.add(new JLabel("Chọn phòng chiếu:"));
+            panel.add(cbPhong);
+            panel.add(new JLabel("Số lượng hàng (VD: 4):"));
+            panel.add(txtSoHang);
+            panel.add(new JLabel("Tổng số ghế (VD: 20):"));
+            panel.add(txtTongGhe);
+            panel.add(new JLabel("Loại ghế mặc định:"));
+            panel.add(cbLoaiGhe);
+
+            int result = JOptionPane.showConfirmDialog(this, panel, "Tạo sơ đồ", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            
+            if (result == JOptionPane.OK_OPTION) {
+                int selectedIndex = cbPhong.getSelectedIndex();
+                int phongChieuId = listPhongCache.get(selectedIndex).getPhongChieuId();
+                
+                int soHang = Integer.parseInt(txtSoHang.getText().trim());
+                int tongGhe = Integer.parseInt(txtTongGhe.getText().trim());
+                String loaiGhe = (String) cbLoaiGhe.getSelectedItem();
+
+                dao.buildGhe(phongChieuId, soHang, tongGhe, loaiGhe);
+                
+                UiUtil.showInfo(this, "Tạo sơ đồ thành công!");
+                
+                cbLPhongChieu.setSelectedIndex(selectedIndex); 
+                taoGhe(model);
+            }
+        } catch (NumberFormatException ex) {
+            UiUtil.showInfo(this, "Lỗi: Số hàng và tổng ghế bắt buộc phải là số!");
+        } catch (Exception ex) {
+            ex.printStackTrace(); 
+            UiUtil.showInfo(this, "Lỗi hệ thống thao tác Ghế: \n" + ex.getMessage());
+        }
     }
 }

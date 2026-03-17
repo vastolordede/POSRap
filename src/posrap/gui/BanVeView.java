@@ -14,20 +14,24 @@ import posrap.util.UiUtil;
 
 public class BanVeView extends JPanel {
 
-    // giữ UI, chỉ đổi generic type để chứa DTO
     private final JComboBox<PhimDTO> cbPhim = new JComboBox<>();
     private final JComboBox<SuatChieuDTO> cbSuat = new JComboBox<>();
     private final JComboBox<PhongChieuDTO> cbPhong = new JComboBox<>();
 
-    private final JPanel pnlGhe = new JPanel(new GridLayout(5, 10, 6, 6));
+    // THAY ĐỔI 1: Dùng GridBagLayout để canh giữa tuyệt đối sơ đồ ghế giống bên Quản trị
+    private final JPanel pnlSoDoGheWrapper = new JPanel(new GridBagLayout());
 
-    private final DefaultTableModel modelGioVe = new DefaultTableModel(new Object[]{"Ghe", "Gia"}, 0);
+    private final DefaultTableModel modelGioVe = new DefaultTableModel(new Object[]{"Ghe", "Gia"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false; // Khóa bảng giỏ vé không cho sửa bậy bạ
+        }
+    };
     private final JTable tblGioVe = new JTable(modelGioVe);
 
     private final JLabel lblTongTien = new JLabel("Tong: 0");
     private final List<GheDTO> dsGheDaChon = new ArrayList<>();
 
-    // map button -> GheDTO để xử lý
     private final Map<JToggleButton, GheDTO> mapBtnGhe = new HashMap<>();
 
     private final RapChieuDAO rapDAO = new RapChieuDAO();
@@ -74,11 +78,10 @@ public class BanVeView extends JPanel {
             dsGheDaChon.clear();
             modelGioVe.setRowCount(0);
             lblTongTien.setText("Tong: 0");
-            loadGheTheoSuatDangChon();
+            sold();
         });
         p.add(btnTaiGhe);
 
-        // events khi đổi phim/suất
         cbPhim.addActionListener(e -> loadSuatTheoPhimDangChon());
         cbSuat.addActionListener(e -> onSuatChanged());
 
@@ -91,7 +94,9 @@ public class BanVeView extends JPanel {
 
         JPanel left = new JPanel(new BorderLayout(10, 10));
         left.setBorder(BorderFactory.createTitledBorder("So do ghe"));
-        left.add(new JScrollPane(pnlGhe), BorderLayout.CENTER);
+        // THAY ĐỔI 2: Đưa Wrapper vào giữa màn hình
+        pnlSoDoGheWrapper.setBackground(Color.WHITE);
+        left.add(new JScrollPane(pnlSoDoGheWrapper), BorderLayout.CENTER);
 
         JPanel right = new JPanel(new BorderLayout(10, 10));
         right.setBorder(BorderFactory.createTitledBorder("Gio ve"));
@@ -113,7 +118,7 @@ public class BanVeView extends JPanel {
             dsGheDaChon.clear();
             modelGioVe.setRowCount(0);
             lblTongTien.setText("Tong: 0");
-            loadGheTheoSuatDangChon();
+            sold();
         });
 
         btnThanhToan.addActionListener(e -> {
@@ -128,8 +133,6 @@ public class BanVeView extends JPanel {
             }
 
             try {
-                // bạn muốn login không liên quan nhân viên => dùng 1 nhân viên hệ thống cố định
-
                 bus.lapHoaDonVe(
                         suat.getSuatChieuId(),
                         new ArrayList<>(dsGheDaChon)
@@ -137,15 +140,13 @@ public class BanVeView extends JPanel {
 
                 UiUtil.showInfo(this, "Thanh toan thanh cong. Phuong thuc: " + cbThanhToan.getSelectedItem());
 
-                // reset
                 dsGheDaChon.clear();
                 modelGioVe.setRowCount(0);
                 capNhatTongTien();
-                loadGheTheoSuatDangChon();
+                sold();
             } catch (Exception ex) {
                 UiUtil.showInfo(this, ex.getMessage());
-                // reload ghế để cập nhật ghế vừa bị người khác mua
-                loadGheTheoSuatDangChon();
+                sold();
             }
         });
 
@@ -193,9 +194,9 @@ public class BanVeView extends JPanel {
         cbPhong.removeAllItems();
 
         if (suat == null) {
-            pnlGhe.removeAll();
-            pnlGhe.revalidate();
-            pnlGhe.repaint();
+            pnlSoDoGheWrapper.removeAll();
+            pnlSoDoGheWrapper.revalidate();
+            pnlSoDoGheWrapper.repaint();
             return;
         }
 
@@ -210,63 +211,119 @@ public class BanVeView extends JPanel {
         modelGioVe.setRowCount(0);
         capNhatTongTien();
 
-        loadGheTheoSuatDangChon();
+        sold();
     }
 
-    private void loadGheTheoSuatDangChon() {
+    private void sold() {
         SuatChieuDTO suat = (SuatChieuDTO) cbSuat.getSelectedItem();
         if (suat == null) return;
-
-        
-        System.out.println("DEBUG suatChieuId=" + suat.getSuatChieuId()
-            + ", phongChieuId=" + suat.getPhongChieuId()
-            + ", gia=" + suat.getGia());
 
         try {
             List<GheDTO> ghe = bus.laySoDoGhe(suat.getSuatChieuId());
             Set<Integer> gheDaBan = bus.getGheDaBan(suat.getSuatChieuId());
 
-            buildSoDoGheFromDb(ghe, gheDaBan, suat);
+            buildGhe(ghe, gheDaBan, suat);
         } catch (Exception ex) {
             UiUtil.showInfo(this, "Khong tai duoc so do ghe: " + ex.getMessage());
         }
     }
 
-    // bus hiện chưa có hàm gheDaBan => gọi qua DAO thông qua BanVeBUS/VeDAO (tạm: cast dùng reflection không nên)
-    // Cách sạch: bạn thêm 1 hàm trong BanVeBUS: getGheDaBan(int suatChieuId) { return veDAO.getGheDaBan(suatChieuId); }
-    
 
-    private void buildSoDoGheFromDb(List<GheDTO> dsGhe, Set<Integer> gheDaBan, SuatChieuDTO suat) {
-        pnlGhe.removeAll();
+    private void buildGhe(List<GheDTO> dsGhe, Set<Integer> gheDaBan, SuatChieuDTO suat) {
+        pnlSoDoGheWrapper.removeAll();
         mapBtnGhe.clear();
-
-        // DB có thể không đúng 5x10. Nhưng GUI bạn đang là GridLayout(5,10).
-        // Mình vẫn giữ layout 5x10, và fill theo thứ tự ghế.
-        // Nếu thiếu ghế -> ô trống. Nếu dư -> phần dư vẫn add nhưng GridLayout sẽ tự mở rộng (GridLayout sẽ tăng hàng).
         double gia = suat.getGia();
 
-        for (GheDTO g : dsGhe) {
-            String ma = (g.getHangGhe() == null ? "" : g.getHangGhe()) + g.getSoGhe();
-            JToggleButton btn = new JToggleButton(ma);
-
-            mapBtnGhe.put(btn, g);
-
-            if (gheDaBan.contains(g.getGheId())) {
-                btn.setEnabled(false);
-                btn.setText(ma + " (da ban)");
-            }
-
-            btn.addActionListener(e -> onChonGhe(btn, g, (int) gia));
-            pnlGhe.add(btn);
+        if (dsGhe.isEmpty()) {
+            pnlSoDoGheWrapper.add(new JLabel("Phòng chiếu này chưa được thiết lập sơ đồ ghế!"));
+            pnlSoDoGheWrapper.revalidate();
+            pnlSoDoGheWrapper.repaint();
+            return;
         }
 
-        pnlGhe.revalidate();
-        pnlGhe.repaint();
+        JPanel pnlRows = new JPanel();
+        pnlRows.setLayout(new BoxLayout(pnlRows, BoxLayout.Y_AXIS)); 
+        pnlRows.setBackground(Color.WHITE);
+
+
+        Map<String, List<GheDTO>> rowMap = new TreeMap<>();
+        for (GheDTO g : dsGhe) {
+            String hang = g.getHangGhe();
+            if (hang != null && !hang.trim().isEmpty()) {
+                rowMap.computeIfAbsent(hang.trim().toUpperCase(), k -> new ArrayList<>()).add(g);
+            }
+        }
+
+
+        for (Map.Entry<String, List<GheDTO>> entry : rowMap.entrySet()) {
+            JPanel pnlOneRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0)); 
+            pnlOneRow.setBackground(Color.WHITE);
+            
+            List<GheDTO> seatsInRow = entry.getValue();
+            seatsInRow.sort(Comparator.comparingInt(GheDTO::getSoGhe));
+
+            int totalSeats = seatsInRow.size();
+            int gapLoiDi = 60;
+
+            for (int i = 0; i < totalSeats; i++) {
+                GheDTO g = seatsInRow.get(i);
+                String ma = g.getHangGhe() + g.getSoGhe();
+                JToggleButton btn = new JToggleButton(ma);
+
+                mapBtnGhe.put(btn, g);
+
+                btn.setPreferredSize(new Dimension(95, 95)); 
+                btn.setFont(new Font("Arial", Font.BOLD, 13)); 
+                btn.setMargin(new Insets(2, 2, 2, 2));
+
+                String loai = g.getLoaiGhe();
+                boolean isVip = (loai != null && loai.trim().equalsIgnoreCase("vip"));
+
+
+                if (gheDaBan.contains(g.getGheId())) {
+                    btn.setEnabled(false);
+                    btn.setBackground(Color.DARK_GRAY); 
+                    btn.setForeground(Color.WHITE);
+                } else {
+                    btn.setBackground(isVip ? new Color(241, 196, 15) : new Color(224, 224, 224));
+                    btn.setForeground(Color.BLACK);
+                    btn.addActionListener(e -> onChonGhe(btn, g, (int) gia));
+                }
+
+                pnlOneRow.add(btn);
+
+
+                if (totalSeats >= 4) { 
+                    if (totalSeats % 2 == 0) { 
+                        if (i == (totalSeats / 2) - 1) pnlOneRow.add(Box.createHorizontalStrut(gapLoiDi));
+                    } else { 
+                        if (i == 0 || i == totalSeats - 2) pnlOneRow.add(Box.createHorizontalStrut(gapLoiDi));
+                    }
+                }
+            }
+            
+            pnlRows.add(pnlOneRow); 
+            pnlRows.add(Box.createVerticalStrut(20));
+        }
+
+        pnlSoDoGheWrapper.add(pnlRows);
+        pnlSoDoGheWrapper.revalidate();
+        pnlSoDoGheWrapper.repaint();
     }
 
+    // THAY ĐỔI 4: Hiệu ứng đổi màu ghế khi click chọn mua
     private void onChonGhe(JToggleButton btn, GheDTO ghe, int gia) {
+        String loai = ghe.getLoaiGhe();
+        boolean isVip = (loai != null && loai.trim().equalsIgnoreCase("vip"));
+        Color colorMacDinh = isVip ? new Color(241, 196, 15) : new Color(224, 224, 224);
+        Color colorDangChon = new Color(46, 204, 113); 
+
         if (btn.isSelected()) {
-            // tránh chọn trùng
+            // Đổi màu giao diện
+            btn.setBackground(colorDangChon);
+            btn.setForeground(Color.WHITE);
+
+            // Logic xử lý giỏ hàng
             for (GheDTO g : dsGheDaChon) {
                 if (g.getGheId() == ghe.getGheId()) return;
             }
@@ -274,6 +331,11 @@ public class BanVeView extends JPanel {
             String ma = (ghe.getHangGhe() == null ? "" : ghe.getHangGhe()) + ghe.getSoGhe();
             modelGioVe.addRow(new Object[]{ma, gia});
         } else {
+            // Trả lại màu giao diện
+            btn.setBackground(colorMacDinh);
+            btn.setForeground(Color.BLACK);
+
+            // Logic xóa khỏi giỏ hàng
             dsGheDaChon.removeIf(g -> g.getGheId() == ghe.getGheId());
             String ma = (ghe.getHangGhe() == null ? "" : ghe.getHangGhe()) + ghe.getSoGhe();
             for (int r = modelGioVe.getRowCount() - 1; r >= 0; r--) {

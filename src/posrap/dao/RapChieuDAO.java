@@ -3,6 +3,7 @@ package posrap.dao;
 import java.sql.*;
 import java.util.*;
 import posrap.dto.*;
+import java.util.*;
 
 public class RapChieuDAO extends BaseDAO {
 
@@ -200,28 +201,6 @@ public class RapChieuDAO extends BaseDAO {
         }
     }
 
-    public List<GheDTO> getGheByPhong(int phongId) throws Exception {
-        String sql = "SELECT ghe_id, phong_chieu_id, hang_ghe, so_ghe, loai_ghe FROM Ghe WHERE phong_chieu_id=? ORDER BY hang_ghe, so_ghe";
-        List<GheDTO> list = new ArrayList<>();
-
-        try (Connection c = getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-
-            ps.setInt(1, phongId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    GheDTO g = new GheDTO();
-                    g.setGheId(rs.getInt("ghe_id"));
-                    g.setPhongChieuId(rs.getInt("phong_chieu_id"));
-                    g.setHangGhe(rs.getString("hang_ghe"));
-                    g.setSoGhe(rs.getInt("so_ghe"));
-                    g.setLoaiGhe(rs.getString("loai_ghe"));
-                    list.add(g);
-                }
-            }
-        }
-        return list;
-    }
     public void insertPhong(PhongChieuDTO p) throws Exception {
     String sql = "INSERT INTO PhongChieu(ten_phong, suc_chua, trang_thai) VALUES(?,?,?)";
     try (Connection c = getConnection();
@@ -246,7 +225,6 @@ public void updatePhong(PhongChieuDTO p) throws Exception {
 }
 
 public void deletePhong(int phongId) throws Exception {
-    // nếu có FK: Ghe(phong_chieu_id), SuatChieu(phong_chieu_id) -> xóa con trước
     String delGhe = "DELETE FROM Ghe WHERE phong_chieu_id=?";
     String delSuat = "DELETE FROM SuatChieu WHERE phong_chieu_id=?";
     String delPhong = "DELETE FROM PhongChieu WHERE phong_chieu_id=?";
@@ -352,5 +330,100 @@ public void deleteSuatChieu(int suatChieuId) throws Exception {
         ps.executeUpdate();
     }
 }
+
+    public void buildGhe(int phongChieuId, int soHang, int tongGhe, String loaiGhe) throws Exception {
+        
+        String getMaxRowSql = "SELECT MAX(hang_ghe) FROM ghe WHERE phong_chieu_id=?";
+        String insertSql = "INSERT INTO ghe(phong_chieu_id, hang_ghe, so_ghe, loai_ghe) VALUES(?,?,?,?)";
+        char startRow = 'A';
+        
+        try (Connection c = getConnection()) {
+            
+            try (PreparedStatement psMax = c.prepareStatement(getMaxRowSql)) {
+                psMax.setInt(1, phongChieuId);
+                try (ResultSet rs = psMax.executeQuery()) {
+                    if (rs.next()) {
+                        String maxHangStr = rs.getString(1);
+                        if (maxHangStr != null && !maxHangStr.trim().isEmpty()) {
+                            char maxHang = maxHangStr.trim().toUpperCase().charAt(0);
+                            startRow = (char) (maxHang + 1); 
+                        }
+                    }
+                }
+            }
+            
+            
+            if (startRow + soHang - 1 > 'Z') {
+                throw new Exception("Vượt quá số lượng hàng ghế tối đa (Z). Vui lòng kiểm tra lại!");
+            }
+
+           
+            int soCot = (int) Math.ceil((double) tongGhe / soHang);
+            int count = 0;
+
+            c.setAutoCommit(false); 
+            try (PreparedStatement ps = c.prepareStatement(insertSql)) {
+                for (int i = 0; i < soHang; i++) {
+                    char hangGhe = (char) (startRow + i);
+                    for (int j = 1; j <= soCot; j++) {
+                        if (count >= tongGhe) break; 
+                        
+                        ps.setInt(1, phongChieuId);
+                        ps.setString(2, String.valueOf(hangGhe)); 
+                        ps.setInt(3, j);                          
+                        ps.setString(4, loaiGhe);
+                        ps.addBatch();
+                        count++;
+                    }
+                }
+                ps.executeBatch(); 
+                c.commit();
+            } catch (Exception ex) {
+                c.rollback();
+                throw ex;
+            } finally {
+                c.setAutoCommit(true);
+            }
+        }
+    }
+
+
+    public List<GheDTO> getGheByPhong(int phongChieuId) throws Exception {
+        List<GheDTO> list = new ArrayList<>();
+        String sql = "SELECT ghe_id, phong_chieu_id, hang_ghe, so_ghe, loai_ghe FROM ghe WHERE phong_chieu_id=? ORDER BY hang_ghe, so_ghe";
+        try (Connection c = getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, phongChieuId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    GheDTO g = new GheDTO();
+                    g.setGheId(rs.getInt("ghe_id"));
+                    g.setPhongChieuId(rs.getInt("phong_chieu_id"));
+                    g.setHangGhe(rs.getString("hang_ghe"));
+                    g.setSoGhe(rs.getInt("so_ghe"));
+                    g.setLoaiGhe(rs.getString("loai_ghe"));
+                    list.add(g);
+                }
+            }
+        }
+        return list;
+    }
+
+
+    public List<PhongChieuDTO> getAllPhongChieu() throws Exception {
+        List<PhongChieuDTO> list = new ArrayList<>();
+        String sql = "SELECT phong_chieu_id, ten_phong FROM phongchieu ORDER BY phong_chieu_id ASC";
+        try (Connection c = getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                PhongChieuDTO p = new PhongChieuDTO();
+                p.setPhongChieuId(rs.getInt("phong_chieu_id"));
+                p.setTenPhong(rs.getString("ten_phong"));
+                list.add(p);
+            }
+        }
+        return list;
+    }
 
 }

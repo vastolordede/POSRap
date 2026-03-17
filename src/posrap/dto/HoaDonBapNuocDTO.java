@@ -41,4 +41,13 @@ public class HoaDonBapNuocDTO {
     public void setTongTien(double tongTien) {
         this.tongTien = tongTien;
     }
+    private boolean daHuy;
+
+public boolean isDaHuy() {
+    return daHuy;
+}
+
+public void setDaHuy(boolean daHuy) {
+    this.daHuy = daHuy;
+}
 }

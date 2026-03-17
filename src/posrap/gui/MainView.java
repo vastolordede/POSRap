@@ -16,7 +16,8 @@ public class MainView extends BaseFrame {
     private static final String KEY_QT_RAP = "quan_tri_rap";
     private static final String KEY_QT_BAP_NUOC = "quan_tri_bap_nuoc";
     private static final String KEY_QT_NHAN_SU = "quan_tri_nhan_su";
-    private static final String KEY_BAO_CAO = "bao_cao";
+    
+    private static final String KEY_QL_HOA_DON = "quan_ly_hoa_don";
 
     public MainView() {
         super("POS rap chieu phim - " + SessionContext.getVaiTro());
@@ -69,17 +70,21 @@ public class MainView extends BaseFrame {
         JButton btnQtRap = new JButton("Quan tri rap");
         JButton btnQtBapNuoc = new JButton("Quan tri bap nuoc");
         JButton btnQtNhanSu = new JButton("Quan tri nhan su");
-        JButton btnBaoCao = new JButton("Bao cao");
+        
+        JButton btnQlHoaDon = new JButton("Quan ly hoa don");
 
         btnQtRap.addActionListener(e -> card.show(pnlContent, KEY_QT_RAP));
         btnQtBapNuoc.addActionListener(e -> card.show(pnlContent, KEY_QT_BAP_NUOC));
         btnQtNhanSu.addActionListener(e -> card.show(pnlContent, KEY_QT_NHAN_SU));
-        btnBaoCao.addActionListener(e -> card.show(pnlContent, KEY_BAO_CAO));
+        
+        btnQlHoaDon.addActionListener(e -> card.show(pnlContent, KEY_QL_HOA_DON));
 
         if (SessionContext.isStaff()) {
             menu.add(btnBanVe);
             menu.add(Box.createVerticalStrut(8));
             menu.add(btnBanBapNuoc);
+            menu.add(Box.createVerticalStrut(8));
+            menu.add(btnQlHoaDon);
         } else {
             menu.add(btnQtRap);
             menu.add(Box.createVerticalStrut(8));
@@ -87,7 +92,9 @@ public class MainView extends BaseFrame {
             menu.add(Box.createVerticalStrut(8));
             menu.add(btnQtNhanSu);
             menu.add(Box.createVerticalStrut(8));
-            menu.add(btnBaoCao);
+            
+            
+            menu.add(btnQlHoaDon);
         }
 
         menu.add(Box.createVerticalGlue());
@@ -100,7 +107,8 @@ public class MainView extends BaseFrame {
         pnlContent.add(new QuanTriRapView(), KEY_QT_RAP);
         pnlContent.add(new QuanTriBapNuocView(), KEY_QT_BAP_NUOC);
         pnlContent.add(new QuanTriNhanSuView(), KEY_QT_NHAN_SU);
-        pnlContent.add(new BaoCaoView(), KEY_BAO_CAO);
+        
+        pnlContent.add(new QuanLyHoaDonContainerView(), KEY_QL_HOA_DON);
         return pnlContent;
     }
 }

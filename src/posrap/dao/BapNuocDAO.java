@@ -406,8 +406,7 @@ public SizeDTO getSizeById(int sizeId) throws Exception {
 
 // CRUD hóa đơn bắp nước (nếu bạn cần quản trị)
 public List<HoaDonBapNuocDTO> getAllHoaDon() throws Exception {
-    String sql = "SELECT hoa_don_id, nhan_vien_id, ngay_lap, tong_tien FROM HoaDonBapNuoc ORDER BY ngay_lap DESC";
-    List<HoaDonBapNuocDTO> list = new ArrayList<>();
+String sql = "SELECT hoa_don_id, nhan_vien_id, ngay_lap, tong_tien, da_huy FROM HoaDonBapNuoc ORDER BY ngay_lap DESC";    List<HoaDonBapNuocDTO> list = new ArrayList<>();
     try (Connection con = getConnection();
          PreparedStatement ps = con.prepareStatement(sql);
          ResultSet rs = ps.executeQuery()) {
@@ -417,6 +416,7 @@ public List<HoaDonBapNuocDTO> getAllHoaDon() throws Exception {
             hd.setNhanVienId(rs.getInt("nhan_vien_id"));
             hd.setNgayLap(rs.getTimestamp("ngay_lap"));
             hd.setTongTien(rs.getLong("tong_tien"));
+            hd.setDaHuy(rs.getBoolean("da_huy"));
             list.add(hd);
         }
     }
@@ -445,5 +445,60 @@ public void deleteHoaDon(int hoaDonId) throws Exception {
         }
     }
 }
+public String getChiTietHoaDonString(int hoaDonId) throws Exception {
 
+    StringBuilder sb = new StringBuilder();
+
+    String sql =
+        "SELECT m.ten_mon, s.ten_size, bt.gia, ct.so_luong " +
+        "FROM ChiTietHoaDonBapNuoc ct " +
+        "JOIN BienTheMon bt ON bt.bien_the_id = ct.bien_the_id " +
+        "JOIN MonBapNuoc m ON m.mon_id = bt.mon_id " +
+        "JOIN SizeMon s ON s.size_id = bt.size_id " +
+        "WHERE ct.hoa_don_id = ?";
+
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setInt(1, hoaDonId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+
+            sb.append("Danh sách món:\n\n");
+
+            while (rs.next()) {
+
+                String tenMon = rs.getString("ten_mon");
+                String size = rs.getString("ten_size");
+                double gia = rs.getDouble("gia");
+                int sl = rs.getInt("so_luong");
+
+                sb.append("- ")
+                  .append(tenMon)
+                  .append(" (Size ")
+                  .append(size)
+                  .append(")")
+                  .append(" x")
+                  .append(sl)
+                  .append("  |  ")
+                  .append((long)gia)
+                  .append(" VNĐ\n");
+            }
+        }
     }
+
+    return sb.toString();
+}
+public void huyHoaDon(int hoaDonId) throws Exception {
+
+    String sql = "UPDATE HoaDonBapNuoc SET da_huy = TRUE WHERE hoa_don_id=?";
+
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setInt(1, hoaDonId);
+        ps.executeUpdate();
+    }
+}
+    }
+    

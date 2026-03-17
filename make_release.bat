@@ -4,6 +4,9 @@ setlocal
 set APP_JAR=dist\POSRap.jar
 set MAIN_CLASS=posrap.POSRap
 
+echo Building project...
+call ant clean jar
+
 rmdir /s /q release 2>nul
 mkdir release
 mkdir release\dist
@@ -23,4 +26,5 @@ echo ===================================
 echo Release created at: release\
 echo Double click release\run.bat
 echo ===================================
+
 endlocal

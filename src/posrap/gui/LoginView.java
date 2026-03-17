@@ -50,9 +50,9 @@ public class LoginView extends BaseFrame {
         g.gridx = 0; g.gridy = 3; g.gridwidth = 2;
         root.add(btnDangNhap, g);
 
-        JLabel hint = new JLabel("Mock login: admin/admin hoac staff/staff", SwingConstants.CENTER);
+        
         g.gridx = 0; g.gridy = 4; g.gridwidth = 2;
-        root.add(hint, g);
+        
 
         btnDangNhap.addActionListener(e -> onDangNhap());
 
