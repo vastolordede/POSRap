@@ -19,7 +19,7 @@ public class QuanTriBapNuocView extends JPanel {
 
         tab.addTab("Mon", buildMonTab());
         tab.addTab("Size", buildSizeTab());
-        tab.addTab("Bien the (mon+size+gia+ton)", buildBienTheTab());
+        tab.addTab("Bien the (mon+size+gia)", buildBienTheTab());
 
         add(tab, BorderLayout.CENTER);
     }
@@ -28,7 +28,7 @@ public class QuanTriBapNuocView extends JPanel {
 
     private JPanel buildMonTab() {
         DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"ID", "Ten", "Gia", "Ton", "Trang thai"}, 0
+                new Object[]{"ID", "Ten", "Gia", "Trang thai"}, 0
         );
         JTable table = new JTable(model);
         reloadMon(model);
@@ -38,12 +38,10 @@ public class QuanTriBapNuocView extends JPanel {
                 () -> {
                     try {
                         String ten = JOptionPane.showInputDialog(this, "Ten mon:");
-                        int ton = Integer.parseInt(JOptionPane.showInputDialog(this, "Ton kho:"));
                         if (ten == null) return;
 
                         MonBapNuocDTO m = new MonBapNuocDTO();
                         m.setTenMon(ten);
-                        m.setTonKho(ton);
                         dao.insertMon(m);
                         reloadMon(model);
                     } catch (Exception ex) {
@@ -55,13 +53,11 @@ public class QuanTriBapNuocView extends JPanel {
                     if (r < 0) return;
                     try {
                         int id = (int) model.getValueAt(r, 0);
-                        String ten = JOptionPane.showInputDialog(this, "Ten moi:", model.getValueAt(r,1));
-                        int ton = Integer.parseInt(JOptionPane.showInputDialog(this, "Ton kho moi:", model.getValueAt(r,3)));
+                        String ten = JOptionPane.showInputDialog(this, "Ten moi:", model.getValueAt(r, 1));
 
                         MonBapNuocDTO m = new MonBapNuocDTO();
                         m.setMonId(id);
                         m.setTenMon(ten);
-                        m.setTonKho(ton);
                         dao.updateMon(m);
                         reloadMon(model);
                     } catch (Exception ex) {
@@ -87,7 +83,7 @@ public class QuanTriBapNuocView extends JPanel {
         try {
             for (MonBapNuocDTO m : dao.getAllMon()) {
                 model.addRow(new Object[]{
-                        m.getMonId(), m.getTenMon(), "", m.getTonKho(), "dang_ban"
+                        m.getMonId(), m.getTenMon(), "", "dang_ban"
                 });
             }
         } catch (Exception ex) {
@@ -99,7 +95,7 @@ public class QuanTriBapNuocView extends JPanel {
 
     private JPanel buildSizeTab() {
         DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"ID", "Ten", "Gia", "Ton", "Trang thai"}, 0
+                new Object[]{"ID", "Ten", "Gia", "Trang thai"}, 0
         );
         JTable table = new JTable(model);
         reloadSize(model);
@@ -123,7 +119,7 @@ public class QuanTriBapNuocView extends JPanel {
                     if (r < 0) return;
                     try {
                         int id = (int) model.getValueAt(r, 0);
-                        String ten = JOptionPane.showInputDialog(this, "Ten moi:", model.getValueAt(r,1));
+                        String ten = JOptionPane.showInputDialog(this, "Ten moi:", model.getValueAt(r, 1));
                         SizeDTO s = new SizeDTO();
                         s.setSizeId(id);
                         s.setTenSize(ten);
@@ -151,7 +147,7 @@ public class QuanTriBapNuocView extends JPanel {
         model.setRowCount(0);
         try {
             for (SizeDTO s : dao.getAllSize()) {
-                model.addRow(new Object[]{s.getSizeId(), s.getTenSize(), "", "", ""});
+                model.addRow(new Object[]{s.getSizeId(), s.getTenSize(), "", ""});
             }
         } catch (Exception ex) {
             UiUtil.showInfo(this, ex.getMessage());
@@ -162,7 +158,7 @@ public class QuanTriBapNuocView extends JPanel {
 
     private JPanel buildBienTheTab() {
         DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"ID", "Ten", "Gia", "Ton", "Trang thai"}, 0
+                new Object[]{"ID", "Ten", "Gia", "Trang thai"}, 0
         );
         JTable table = new JTable(model);
         reloadBienThe(model);
@@ -171,9 +167,36 @@ public class QuanTriBapNuocView extends JPanel {
                 () -> reloadBienThe(model),
                 () -> {
                     try {
-                        int monId = Integer.parseInt(JOptionPane.showInputDialog(this, "Mon ID:"));
-                        int sizeId = Integer.parseInt(JOptionPane.showInputDialog(this, "Size ID:"));
-                        double gia = Double.parseDouble(JOptionPane.showInputDialog(this, "Gia:"));
+                        // Dropdown chon Mon
+                        List<MonBapNuocDTO> danhSachMon = dao.getAllMon();
+                        if (danhSachMon.isEmpty()) {
+                            UiUtil.showInfo(this, "Chua co mon nao. Vui long them mon truoc.");
+                            return;
+                        }
+                        String[] tenMonArr = danhSachMon.stream()
+                                .map(m -> m.getMonId() + " - " + m.getTenMon())
+                                .toArray(String[]::new);
+                        JComboBox<String> cbMon = new JComboBox<>(tenMonArr);
+                        int optMon = JOptionPane.showConfirmDialog(this, cbMon, "Chon mon:", JOptionPane.OK_CANCEL_OPTION);
+                        if (optMon != JOptionPane.OK_OPTION) return;
+                        int monId = danhSachMon.get(cbMon.getSelectedIndex()).getMonId();
+
+                        // Dropdown chon Size
+                        List<SizeDTO> danhSachSize = dao.getAllSize();
+                        if (danhSachSize.isEmpty()) {
+                            UiUtil.showInfo(this, "Chua co size nao. Vui long them size truoc.");
+                            return;
+                        }
+                        String[] tenSizeArr = danhSachSize.stream()
+                                .map(s -> s.getSizeId() + " - " + s.getTenSize())
+                                .toArray(String[]::new);
+                        JComboBox<String> cbSize = new JComboBox<>(tenSizeArr);
+                        int optSize = JOptionPane.showConfirmDialog(this, cbSize, "Chon size:", JOptionPane.OK_CANCEL_OPTION);
+                        if (optSize != JOptionPane.OK_OPTION) return;
+                        int sizeId = danhSachSize.get(cbSize.getSelectedIndex()).getSizeId();
+                        String giaStr = JOptionPane.showInputDialog(this, "Gia:");
+                        if (giaStr == null) return;
+                        double gia = Double.parseDouble(giaStr);
                         dao.insertBienThe(monId, sizeId, gia);
                         reloadBienThe(model);
                     } catch (Exception ex) {
@@ -185,7 +208,9 @@ public class QuanTriBapNuocView extends JPanel {
                     if (r < 0) return;
                     try {
                         int id = (int) model.getValueAt(r, 0);
-                        double gia = Double.parseDouble(JOptionPane.showInputDialog(this, "Gia moi:", model.getValueAt(r,2)));
+                        String giaStr = JOptionPane.showInputDialog(this, "Gia moi:", model.getValueAt(r, 2));
+                        if (giaStr == null) return;
+                        double gia = Double.parseDouble(giaStr);
                         dao.updateBienThe(id, gia);
                         reloadBienThe(model);
                     } catch (Exception ex) {
@@ -211,7 +236,7 @@ public class QuanTriBapNuocView extends JPanel {
         try {
             List<Object[]> list = dao.getAllBienTheView();
             for (Object[] r : list) {
-                model.addRow(new Object[]{r[0], r[1] + " - " + r[2], r[3], "", "dang_ban"});
+                model.addRow(new Object[]{r[0], r[1] + " - " + r[2], r[3], "dang_ban"});
             }
         } catch (Exception ex) {
             UiUtil.showInfo(this, ex.getMessage());

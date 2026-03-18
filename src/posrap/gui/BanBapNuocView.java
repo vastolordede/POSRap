@@ -12,7 +12,6 @@ import posrap.util.UiUtil;
 
 public class BanBapNuocView extends JPanel {
 
-    // GIỮ UI: vẫn JComboBox<String> như bạn đang có
     private final JComboBox<String> cbMon = new JComboBox<>();
     private final JComboBox<String> cbSize = new JComboBox<>();
     private final JSpinner spSoLuong = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
@@ -24,14 +23,11 @@ public class BanBapNuocView extends JPanel {
 
     private final JLabel lblTong = new JLabel("Tong: 0");
 
-    // BUS
     private final BanBapNuocBUS bus = new BanBapNuocBUS();
 
-    // map tên -> id để GUI gọi BUS theo DB
     private final Map<String, Integer> monIdByTen = new HashMap<>();
     private final Map<String, Integer> sizeIdByTen = new HashMap<>();
 
-    // giỏ hàng thật (giữ bienTheId để thanh toán)
     private static class GioItem {
         int bienTheId;
         String monTen;
@@ -55,7 +51,6 @@ public class BanBapNuocView extends JPanel {
         add(new JScrollPane(tblGio), BorderLayout.CENTER);
         add(buildBottomPay(), BorderLayout.SOUTH);
 
-        // nạp combo từ DB thật
         loadCombosFromDb();
     }
 
@@ -87,12 +82,33 @@ public class BanBapNuocView extends JPanel {
     }
 
     private JComponent buildTopAdd() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        JButton btnThem = new JButton("Them vao gio");
+        Font filterFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+        Dimension cbSize2 = new Dimension(160, 36);
+        Dimension btnSize = new Dimension(150, 36);
+
+        cbMon.setFont(filterFont);
+        cbMon.setPreferredSize(cbSize2);
+
+        cbSize.setFont(filterFont);
+        cbSize.setPreferredSize(new Dimension(120, 36));
+
+        spSoLuong.setFont(filterFont);
+        spSoLuong.setPreferredSize(new Dimension(70, 36));
+
+        JButton btnThem    = new JButton("Them vao gio");
         JButton btnXoaDong = new JButton("Xoa dong");
+        btnThem.setFont(filterFont);
+        btnThem.setPreferredSize(btnSize);
+        btnXoaDong.setFont(filterFont);
+        btnXoaDong.setPreferredSize(new Dimension(110, 36));
+
+        JLabel lblMon  = new JLabel("Mon:");
+        JLabel lblSize = new JLabel("Size:");
+        JLabel lblSl   = new JLabel("So luong:");
+        for (JLabel lbl : new JLabel[]{lblMon, lblSize, lblSl}) lbl.setFont(filterFont);
 
         btnThem.addActionListener(e -> {
-            String monTen = (String) cbMon.getSelectedItem();
+            String monTen  = (String) cbMon.getSelectedItem();
             String sizeTen = (String) cbSize.getSelectedItem();
             if (monTen == null || sizeTen == null) {
                 UiUtil.showInfo(this, "Chua co du lieu mon/size.");
@@ -111,11 +127,23 @@ public class BanBapNuocView extends JPanel {
                 int donGia = (int) bt.getGia();
                 long thanhTien = (long) soLuong * donGia;
 
-                // add vào table (UI giữ nguyên)
-                modelGio.addRow(new Object[]{monTen, sizeTen, soLuong, donGia, thanhTien});
+                boolean found = false;
+                for (int i = 0; i < gioHang.size(); i++) {
+                    GioItem item = gioHang.get(i);
+                    if (item.bienTheId == bt.getBienTheId()) {
+                        item.soLuong += soLuong;
+                        long thanhTienMoi = (long) item.soLuong * item.donGia;
+                        modelGio.setValueAt(item.soLuong, i, 2);
+                        modelGio.setValueAt(thanhTienMoi, i, 4);
+                        found = true;
+                        break;
+                    }
+                }
 
-                // add vào giỏ thật để thanh toán
-                gioHang.add(new GioItem(bt.getBienTheId(), monTen, sizeTen, soLuong, donGia));
+                if (!found) {
+                    modelGio.addRow(new Object[]{monTen, sizeTen, soLuong, donGia, thanhTien});
+                    gioHang.add(new GioItem(bt.getBienTheId(), monTen, sizeTen, soLuong, donGia));
+                }
 
                 capNhatTong();
 
@@ -129,12 +157,9 @@ public class BanBapNuocView extends JPanel {
             if (row < 0) { UiUtil.showInfo(this, "Chon 1 dong de xoa."); return; }
             if (!UiUtil.confirm(this, "Xoa dong da chon?")) return;
 
-            // xóa đúng item trong gioHang theo index dòng
-            if (row >= 0 && row < gioHang.size()) {
+            if (row < gioHang.size()) {
                 GioItem it = gioHang.get(row);
-
-        // ✅ DÙNG field để IDE hết warning + log nghiệp vụ
-        System.out.println("Xoa mon: " + it.monTen + " size " + it.sizeTen);
+                System.out.println("Xoa mon: " + it.monTen + " size " + it.sizeTen);
                 gioHang.remove(row);
             }
 
@@ -142,11 +167,12 @@ public class BanBapNuocView extends JPanel {
             capNhatTong();
         });
 
-        p.add(new JLabel("Mon:"));
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        p.add(lblMon);
         p.add(cbMon);
-        p.add(new JLabel("Size:"));
+        p.add(lblSize);
         p.add(cbSize);
-        p.add(new JLabel("So luong:"));
+        p.add(lblSl);
         p.add(spSoLuong);
         p.add(btnThem);
         p.add(btnXoaDong);
@@ -154,9 +180,17 @@ public class BanBapNuocView extends JPanel {
     }
 
     private JComponent buildBottomPay() {
+        Font filterFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         JComboBox<String> cbThanhToan = new JComboBox<>(new String[]{"tien_mat", "chuyen_khoan", "the"});
         JButton btnThanhToan = new JButton("Thanh toan");
+
+        cbThanhToan.setFont(filterFont);
+        cbThanhToan.setPreferredSize(new Dimension(150, 36));
+        btnThanhToan.setFont(filterFont);
+        btnThanhToan.setPreferredSize(new Dimension(130, 36));
+        lblTong.setFont(filterFont);
 
         btnThanhToan.addActionListener(e -> {
             if (modelGio.getRowCount() == 0 || gioHang.isEmpty()) {
@@ -165,12 +199,9 @@ public class BanBapNuocView extends JPanel {
             }
 
             try {
-                // giống bên bán vé: dùng nhân viên hệ thống cố định
-                
-
                 List<ChiTietHoaDonBapNuocDTO> ct = new ArrayList<>();
                 for (GioItem it : gioHang) {
-                      System.out.println(it.monTen + " - " + it.sizeTen + " x " + it.soLuong + " | donGia=" + it.donGia);
+                    System.out.println(it.monTen + " - " + it.sizeTen + " x " + it.soLuong + " | donGia=" + it.donGia);
                     ChiTietHoaDonBapNuocDTO c = new ChiTietHoaDonBapNuocDTO();
                     c.setBienTheId(it.bienTheId);
                     c.setSoLuong(it.soLuong);
@@ -186,7 +217,6 @@ public class BanBapNuocView extends JPanel {
                         " | Phuong thuc: " + cbThanhToan.getSelectedItem()
                 );
 
-                // reset
                 gioHang.clear();
                 modelGio.setRowCount(0);
                 capNhatTong();
@@ -204,7 +234,7 @@ public class BanBapNuocView extends JPanel {
     }
 
     private BienTheMonDTO layBienTheTheoTen(String monTen, String sizeTen) throws Exception {
-        Integer monId = monIdByTen.get(monTen);
+        Integer monId  = monIdByTen.get(monTen);
         Integer sizeId = sizeIdByTen.get(sizeTen);
         if (monId == null || sizeId == null) return null;
         return bus.layBienThe(monId, sizeId);

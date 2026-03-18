@@ -16,7 +16,7 @@ public class MainView extends BaseFrame {
     private static final String KEY_QT_RAP = "quan_tri_rap";
     private static final String KEY_QT_BAP_NUOC = "quan_tri_bap_nuoc";
     private static final String KEY_QT_NHAN_SU = "quan_tri_nhan_su";
-    
+
     private static final String KEY_QL_HOA_DON = "quan_ly_hoa_don";
 
     public MainView() {
@@ -41,7 +41,11 @@ public class MainView extends BaseFrame {
         top.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
         JLabel lbl = new JLabel("Xin chao: " + SessionContext.getHoTen() + " | Vai tro: " + SessionContext.getVaiTro());
+        lbl.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+
         JButton btnDangXuat = new JButton("Dang xuat");
+        btnDangXuat.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        btnDangXuat.setPreferredSize(new Dimension(120, 36));
 
         btnDangXuat.addActionListener(e -> {
             if (!UiUtil.confirm(this, "Ban muon dang xuat?")) return;
@@ -60,23 +64,30 @@ public class MainView extends BaseFrame {
         JPanel menu = new JPanel();
         menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
         menu.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        menu.setPreferredSize(new Dimension(220, 0));
+        menu.setPreferredSize(new Dimension(180, 0));
 
-        JButton btnBanVe = new JButton("Ban ve");
-        JButton btnBanBapNuoc = new JButton("Ban bap nuoc");
+        JButton btnBanVe        = new JButton("Ban ve");
+        JButton btnBanBapNuoc   = new JButton("Ban bap nuoc");
+        JButton btnQtRap        = new JButton("Quan tri rap");
+        JButton btnQtBapNuoc    = new JButton("Quan tri bap nuoc");
+        JButton btnQtNhanSu     = new JButton("Quan tri nhan su");
+        JButton btnQlHoaDon     = new JButton("Quan ly hoa don");
+
+        // Kích thước và font đồng nhất cho tất cả nút sidebar
+        Dimension btnSize = new Dimension(160, 45);
+        Font btnFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+        for (JButton btn : new JButton[]{btnBanVe, btnBanBapNuoc, btnQtRap, btnQtBapNuoc, btnQtNhanSu, btnQlHoaDon}) {
+            btn.setPreferredSize(btnSize);
+            btn.setMaximumSize(btnSize);
+            btn.setMinimumSize(btnSize);
+            btn.setFont(btnFont);
+        }
+
         btnBanVe.addActionListener(e -> card.show(pnlContent, KEY_BAN_VE));
         btnBanBapNuoc.addActionListener(e -> card.show(pnlContent, KEY_BAN_BAP_NUOC));
-
-        JButton btnQtRap = new JButton("Quan tri rap");
-        JButton btnQtBapNuoc = new JButton("Quan tri bap nuoc");
-        JButton btnQtNhanSu = new JButton("Quan tri nhan su");
-        
-        JButton btnQlHoaDon = new JButton("Quan ly hoa don");
-
         btnQtRap.addActionListener(e -> card.show(pnlContent, KEY_QT_RAP));
         btnQtBapNuoc.addActionListener(e -> card.show(pnlContent, KEY_QT_BAP_NUOC));
         btnQtNhanSu.addActionListener(e -> card.show(pnlContent, KEY_QT_NHAN_SU));
-        
         btnQlHoaDon.addActionListener(e -> card.show(pnlContent, KEY_QL_HOA_DON));
 
         if (SessionContext.isStaff()) {
@@ -92,8 +103,6 @@ public class MainView extends BaseFrame {
             menu.add(Box.createVerticalStrut(8));
             menu.add(btnQtNhanSu);
             menu.add(Box.createVerticalStrut(8));
-            
-            
             menu.add(btnQlHoaDon);
         }
 
@@ -107,7 +116,6 @@ public class MainView extends BaseFrame {
         pnlContent.add(new QuanTriRapView(), KEY_QT_RAP);
         pnlContent.add(new QuanTriBapNuocView(), KEY_QT_BAP_NUOC);
         pnlContent.add(new QuanTriNhanSuView(), KEY_QT_NHAN_SU);
-        
         pnlContent.add(new QuanLyHoaDonContainerView(), KEY_QL_HOA_DON);
         return pnlContent;
     }

@@ -25,13 +25,11 @@ public class QuanLyHoaDonView extends JPanel {
     private final VeDAO veDAO = new VeDAO();
 
     public QuanLyHoaDonView() {
-
         setLayout(new BorderLayout(10, 10));
 
         table.setRowHeight(26);
 
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-
             @Override
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected,
@@ -61,12 +59,19 @@ public class QuanLyHoaDonView extends JPanel {
     }
 
     private JPanel buildTopPanel() {
+        Font btnFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+        Dimension btnSize = new Dimension(150, 36);
 
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         JButton btnRefresh = new JButton("Làm mới");
-        JButton btnDetail = new JButton("Xem chi tiết");
-        JButton btnCancel = new JButton("Hủy hóa đơn");
+        JButton btnDetail  = new JButton("Xem chi tiết");
+        JButton btnCancel  = new JButton("Hủy hóa đơn");
+
+        for (JButton btn : new JButton[]{btnRefresh, btnDetail, btnCancel}) {
+            btn.setFont(btnFont);
+            btn.setPreferredSize(btnSize);
+        }
 
         btnRefresh.addActionListener(e -> loadData());
         btnDetail.addActionListener(e -> showInvoiceDetail());
@@ -80,15 +85,12 @@ public class QuanLyHoaDonView extends JPanel {
     }
 
     private void loadData() {
-
         model.setRowCount(0);
 
         try {
-
             List<HoaDonVeDTO> list = veDAO.getAllHoaDonVe();
 
             for (HoaDonVeDTO hd : list) {
-
                 model.addRow(new Object[]{
                         hd.getHoaDonVeId(),
                         hd.getNhanVienId(),
@@ -99,17 +101,14 @@ public class QuanLyHoaDonView extends JPanel {
             }
 
         } catch (Exception ex) {
-
             UiUtil.showInfo(this, "Không thể tải danh sách: " + ex.getMessage());
         }
     }
 
     private void showInvoiceDetail() {
-
         int selectedRow = table.getSelectedRow();
 
         if (selectedRow < 0) {
-
             UiUtil.showInfo(this, "Vui lòng chọn một hóa đơn!");
             return;
         }
@@ -117,7 +116,6 @@ public class QuanLyHoaDonView extends JPanel {
         int hoaDonVeId = (int) model.getValueAt(selectedRow, 0);
 
         try {
-
             String details = veDAO.getChiTietHoaDonString(hoaDonVeId);
 
             JOptionPane.showMessageDialog(
@@ -128,26 +126,22 @@ public class QuanLyHoaDonView extends JPanel {
             );
 
         } catch (Exception ex) {
-
             UiUtil.showInfo(this, "Lỗi khi lấy chi tiết: " + ex.getMessage());
         }
     }
 
     private void cancelSelectedInvoice() {
-
         int selectedRow = table.getSelectedRow();
 
         if (selectedRow < 0) {
-
             UiUtil.showInfo(this, "Vui lòng chọn một hóa đơn!");
             return;
         }
 
         int hoaDonVeId = (int) model.getValueAt(selectedRow, 0);
-        boolean daHuy = (boolean) model.getValueAt(selectedRow, 4);
+        boolean daHuy  = (boolean) model.getValueAt(selectedRow, 4);
 
         if (daHuy) {
-
             UiUtil.showInfo(this, "Hóa đơn này đã bị hủy!");
             return;
         }
@@ -157,15 +151,11 @@ public class QuanLyHoaDonView extends JPanel {
                 " ?\nHành động này KHÔNG thể khôi phục!")) {
 
             try {
-
                 veDAO.huyHoaDonVe(hoaDonVeId);
-
                 UiUtil.showInfo(this, "Hủy hóa đơn thành công!");
-
                 loadData();
 
             } catch (Exception ex) {
-
                 UiUtil.showInfo(this, "Lỗi khi hủy: " + ex.getMessage());
             }
         }
