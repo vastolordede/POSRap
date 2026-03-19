@@ -7,7 +7,7 @@ import posrap.dto.NhanVienDTO;
 public class NhanVienDAO extends BaseDAO {
 
     public List<NhanVienDTO> getAllNhanVien() throws Exception {
-        String sql = "SELECT nhan_vien_id, ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, sdt, trang_thai FROM NhanVien";
+        String sql = "SELECT nhan_vien_id, ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, trang_thai FROM NhanVien";
         List<NhanVienDTO> list = new ArrayList<>();
 
         try (Connection c = getConnection();
@@ -20,7 +20,7 @@ public class NhanVienDAO extends BaseDAO {
     }
 
     public NhanVienDTO getById(int nhanVienId) throws Exception {
-        String sql = "SELECT nhan_vien_id, ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, sdt, trang_thai FROM NhanVien WHERE nhan_vien_id=?";
+        String sql = "SELECT nhan_vien_id, ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, trang_thai FROM NhanVien WHERE nhan_vien_id=?";
         try (Connection c = getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, nhanVienId);
@@ -33,7 +33,7 @@ public class NhanVienDAO extends BaseDAO {
 
     public int insert(NhanVienDTO nv) throws Exception {
         String sql =
-            "INSERT INTO NhanVien(ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, sdt, trang_thai) " +
+            "INSERT INTO NhanVien(ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, trang_thai) " +
             "VALUES(?,?,?,?,?,?,?,?)";
 
         try (Connection c = getConnection();
@@ -45,8 +45,7 @@ public class NhanVienDAO extends BaseDAO {
             ps.setString(4, nv.getEmail());
             ps.setString(5, nv.getDiaChi());
             ps.setString(6, nv.getMaNv());
-            ps.setString(7, nv.getSdt());
-            ps.setString(8, nv.getTrangThai());
+            ps.setString(7, nv.getTrangThai());
 
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -58,7 +57,7 @@ public class NhanVienDAO extends BaseDAO {
 
     public void update(NhanVienDTO nv) throws Exception {
         String sql =
-            "UPDATE NhanVien SET ho_ten=?, ngay_sinh=?, so_dien_thoai=?, email=?, dia_chi=?, ma_nv=?, sdt=?, trang_thai=? " +
+            "UPDATE NhanVien SET ho_ten=?, ngay_sinh=?, so_dien_thoai=?, email=?, dia_chi=?, ma_nv=?, trang_thai=? " +
             "WHERE nhan_vien_id=?";
 
         try (Connection c = getConnection();
@@ -70,9 +69,8 @@ public class NhanVienDAO extends BaseDAO {
             ps.setString(4, nv.getEmail());
             ps.setString(5, nv.getDiaChi());
             ps.setString(6, nv.getMaNv());
-            ps.setString(7, nv.getSdt());
-            ps.setString(8, nv.getTrangThai());
-            ps.setInt(9, nv.getNhanVienId());
+            ps.setString(7, nv.getTrangThai());
+            ps.setInt(8, nv.getNhanVienId());
 
             ps.executeUpdate();
         }
@@ -109,9 +107,9 @@ public class NhanVienDAO extends BaseDAO {
 
     public List<NhanVienDTO> search(String keyword) throws Exception {
         String sql =
-            "SELECT nhan_vien_id, ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, sdt, trang_thai " +
+            "SELECT nhan_vien_id, ho_ten, ngay_sinh, so_dien_thoai, email, dia_chi, ma_nv, trang_thai " +
             "FROM NhanVien " +
-            "WHERE ho_ten LIKE ? OR ma_nv LIKE ? OR sdt LIKE ? OR email LIKE ? " +
+            "WHERE ho_ten LIKE ? OR ma_nv LIKE ? OR so_dien_thoai LIKE ? OR email LIKE ? " +
             "ORDER BY nhan_vien_id";
 
         String k = "%" + (keyword == null ? "" : keyword.trim()) + "%";
@@ -141,7 +139,6 @@ public class NhanVienDAO extends BaseDAO {
         nv.setEmail(rs.getString("email"));
         nv.setDiaChi(rs.getString("dia_chi"));
         nv.setMaNv(rs.getString("ma_nv"));
-        nv.setSdt(rs.getString("sdt"));
         nv.setTrangThai(rs.getString("trang_thai"));
         return nv;
     }
